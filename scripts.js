@@ -1,67 +1,75 @@
-// scripts.js
-document.addEventListener('DOMContentLoaded', () => {
-    const map = L.map('map').setView([20, 0], 2); // Centered on the world
+// Load CSV file and create the visualization
+d3.csv('Employee List (5).csv').then(data => {
+    // Extract unique countries and departments for the filters
+    const countries = [...new Set(data.map(d => d.Country))];
+    const departments = [...new Set(data.map(d => d.Department))];
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    const countrySelect = document.getElementById('countrySelect');
-    const regionSelect = document.getElementById('regionSelect');
-    const departmentSelect = document.getElementById('departmentSelect');
-
-    const uniqueCountries = [...new Set(employeeData.map(emp => emp.country))];
-    const uniqueRegions = [...new Set(employeeData.map(emp => emp.region))];
-    const uniqueDepartments = [...new Set(employeeData.map(emp => emp.department))];
-
-    uniqueCountries.forEach(country => {
-        const option = document.createElement('option');
-        option.value = country;
-        option.textContent = country;
-        countrySelect.appendChild(option);
+    // Populate the country filter
+    const countrySelect = d3.select('#countrySelect');
+    countrySelect.append('option').text('All').attr('value', 'All');
+    countries.forEach(country => {
+        countrySelect.append('option').text(country).attr('value', country);
     });
 
-    uniqueRegions.forEach(region => {
-        const option = document.createElement('option');
-        option.value = region;
-        option.textContent = region;
-        regionSelect.appendChild(option);
+    // Populate the department filter
+    const departmentSelect = d3.select('#departmentSelect');
+    departmentSelect.append('option').text('All').attr('value', 'All');
+    departments.forEach(department => {
+        departmentSelect.append('option').text(department).attr('value', department);
     });
 
-    uniqueDepartments.forEach(department => {
-        const option = document.createElement('option');
-        option.value = department;
-        option.textContent = department;
-        departmentSelect.appendChild(option);
-    });
+    // Create the initial chart
+    updateChart(data);
 
-    function updateMap() {
-        map.eachLayer((layer) => {
-            if (!!layer.toGeoJSON) {
-                map.removeLayer(layer);
-            }
-        });
+    // Add event listeners to the filters
+    countrySelect.on('change', () => updateChart(data));
+    departmentSelect.on('change', () => updateChart(data));
+});
 
-        const filteredData = employeeData.filter(emp => {
-            return (!countrySelect.value || emp.country === countrySelect.value) &&
-                   (!regionSelect.value || emp.region === regionSelect.value) &&
-                   (!departmentSelect.value || emp.department === departmentSelect.value);
-        });
+function updateChart(data) {
+    const selectedCountry = d3.select('#countrySelect').property('value');
+    const selectedDepartment = d3.select('#departmentSelect').property('value');
 
-        filteredData.forEach(emp => {
-            // Assuming we have lat and lon for each country/region
-            const lat = 0; // Replace with actual latitude
-            const lon = 0; // Replace with actual longitude
-
-            L.marker([lat, lon])
-                .bindPopup(`<b>${emp.country}</b><br>${emp.region}<br>${emp.department}: ${emp.count}`)
-                .addTo(map);
-        });
+    // Filter the data based on the selected filters
+    let filteredData = data;
+    if (selectedCountry !== 'All') {
+        filteredData = filteredData.filter(d => d.Country === selectedCountry);
+    }
+    if (selectedDepartment !== 'All') {
+        filteredData = filteredData.filter(d => d.Department === selectedDepartment);
     }
 
-    countrySelect.addEventListener('change', updateMap);
-    regionSelect.addEventListener('change', updateMap);
-    departmentSelect.addEventListener('change', updateMap);
+    // Clear the previous chart
+    d3.select('#chart').html('');
 
-    updateMap();
-});
+    // Create a new chart with the filtered data
+    const width = 800;
+    const height = 400;
+
+    const svg = d3.select('#chart')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    // Create a simple bar chart as an example
+    const x = d3.scaleBand()
+        .domain(filteredData.map(d => d['Last Name']))
+        .range([0, width])
+        .padding(0.1);
+
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(filteredData, d => +d['Job Title'])])
+        .nice()
+        .range([height, 0]);
+
+    svg.append('g')
+        .selectAll('rect')
+        .data(filteredData)
+        .enter()
+        .append('rect')
+        .attr('x', d => x(d['Last Name']))
+        .attr('y', d => y(+d['Job Title']))
+        .attr('width', x.bandwidth())
+        .attr('height', d => height - y(+d['Job Title']))
+        .attr('fill', 'steelblue');
+}
