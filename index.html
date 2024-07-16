@@ -3,29 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HR Analytics Map</title>
+    <title>HR Analytics</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script defer src="scripts.js"></script>
 </head>
 <body>
-    <div class="filters">
-        <select id="countrySelect">
-            <option value="">Select Country</option>
-            <!-- Options will be populated dynamically -->
-        </select>
-        <select id="regionSelect">
-            <option value="">Select Region</option>
-            <!-- Options will be populated dynamically -->
-        </select>
-        <select id="departmentSelect">
-            <option value="">Select Department</option>
-            <!-- Options will be populated dynamically -->
-        </select>
-    </div>
-    <div id="map" style="height: 600px;"></div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="data.js"></script>
-    <script src="scripts.js"></script>
+    <header>
+        <img src="path-to-your-logo.png" alt="Company Logo" class="logo">
+        <h1>HR Analytics Dashboard</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Filter</h2>
+            <label for="countrySelect">Country:</label>
+            <select id="countrySelect"></select>
+            <label for="departmentSelect">Department:</label>
+            <select id="departmentSelect"></select>
+        </section>
+        <section>
+            <h2>HR Analytics</h2>
+            <div id="chart"></div>
+        </section>
+    </main>
+    <footer>
+        <p>Contact us at <a href="mailto:your-email@company.com">your-email@company.com</a></p>
+    </footer>
 </body>
 </html>
